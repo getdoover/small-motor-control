@@ -106,7 +106,7 @@ class SmallMotorControlApplication(Application):
 
         ## For getting either digital or analog inputs
         async def get_input(pin):
-            if pin >= 4:
+            if pin > 3:
                 return await self.platform_iface.get_ai_async(pin - 4)
             else:
                 return await self.platform_iface.get_di_async(pin)
@@ -169,22 +169,22 @@ class SmallMotorControlApplication(Application):
     
     async def set_ignition(self, state: bool):
         log.debug(f"Setting ignition to {state} on pin {self.config.ignition_out_pin.value}")
-        if self.config.ignition_out_pin.value >= 5:
-            await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 5, state)
+        if self.config.ignition_out_pin.value > 5:
+            await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 6, state)
         else:
             await self.platform_iface.set_do_async(self.config.ignition_out_pin.value, state)
 
     async def set_starter(self, state: bool):
         log.debug(f"Setting starter to {state} on pin {self.config.starter_pin.value}")
-        if self.config.starter_pin.value >= 5:
-            await self.platform_iface.set_ao_async(self.config.starter_pin.value - 5, state)
+        if self.config.starter_pin.value > 5:
+            await self.platform_iface.set_ao_async(self.config.starter_pin.value - 6, state)
         else:
             await self.platform_iface.set_do_async(self.config.starter_pin.value, state)
 
     async def set_horn(self, state: bool):
         log.debug(f"Setting horn to {state} on pin {self.config.horn_pin.value}")
-        if self.config.horn_pin.value >= 5:
-            await self.platform_iface.set_ao_async(self.config.horn_pin.value - 5, state)
+        if self.config.horn_pin.value > 5:
+            await self.platform_iface.set_ao_async(self.config.horn_pin.value - 6, state)
         else:
             await self.platform_iface.set_do_async(self.config.horn_pin.value, state)
 

@@ -7,10 +7,12 @@
         "allow_many": true,
         "description": "For Controlling Small Diesel and Petrol Motors",
         "long_description": "README.md",
-        "depends_on": [],
+        "depends_on": [
+            "platform_interface"
+        ],
         "owner_org": "36a22e32-ab81-4a39-b400-869d532a052d",
-        "image_name": "ghcr.io/getdoover/small_motor_control:latest",
-        "container_registry_profile": "904ea459-58f8-4666-a4e0-4a495a6f5e65",
+        "image_name": "ghcr.io/getdoover/small-motor-control:main",
+        "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e",
         "build_args": "--platform linux/amd64,linux/arm64",
         "config_schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -18,51 +20,54 @@
             "title": "Application Config",
             "type": "object",
             "properties": {
-                "ignition_input_pin": {
-                    "title": "Ignition Input Pin",
-                    "x-name": "ignition_input_pin",
+                "ignition_in_pin": {
+                    "title": "Ignition In Pin",
+                    "x-name": "ignition_in_pin",
                     "x-hidden": false,
                     "type": "integer",
+                    "description": "This pin is used to detect the ignition state. AI are Pin 4-5",
                     "default": 1,
                     "minimum": 0
                 },
-                "ignition_control_pin,_ao_are_pin_6-7": {
-                    "title": "Ignition Control Pin, AO are Pin 6-7",
-                    "x-name": "ignition_control_pin,_ao_are_pin_6-7",
+                "no_charge_in_pin": {
+                    "title": "No Charge In Pin",
+                    "x-name": "no_charge_in_pin",
                     "x-hidden": false,
                     "type": "integer",
+                    "description": "This pin is used to detect the alternator charging state. AI are Pin 4-5",
+                    "default": 2,
+                    "minimum": 0
+                },
+                "ignition_out_pin": {
+                    "title": "Ignition Out Pin",
+                    "x-name": "ignition_out_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "This pin is used to control the ignition relay. AO are Pin 6-7",
                     "default": 0,
                     "minimum": 0
                 },
-                "starter_control_pin,_ao_are_pin_6-7": {
-                    "title": "Starter Control Pin, AO are Pin 6-7",
-                    "x-name": "starter_control_pin,_ao_are_pin_6-7",
+                "starter_pin": {
+                    "title": "Starter Pin",
+                    "x-name": "starter_pin",
                     "x-hidden": false,
                     "type": "integer",
+                    "description": "This pin is used to control the starter relay. AO are Pin 6-7",
                     "default": 6,
                     "minimum": 0
                 },
-                "horn_control_pin,_ao_are_pin_6-7": {
-                    "title": "Horn Control Pin, AO are Pin 6-7",
-                    "x-name": "horn_control_pin,_ao_are_pin_6-7",
+                "horn_pin": {
+                    "title": "Horn Pin",
+                    "x-name": "horn_pin",
                     "x-hidden": false,
                     "type": "integer",
+                    "description": "This pin is used to control the horn relay. AO are Pin 6-7",
                     "default": 7,
                     "minimum": 0
-                },
-                "simulator_app_key": {
-                    "format": "doover-application",
-                    "title": "Simulator App Key",
-                    "x-name": "simulator_app_key",
-                    "x-hidden": false,
-                    "type": "string",
-                    "description": "The app key for the simulator"
                 }
             },
             "additionalElements": true,
-            "required": [
-                "simulator_app_key"
-            ]
+            "required": []
         },
         "key": "f0f8c775-9eac-4725-b0e5-d34f170a1a2a",
         "repo_branch": "main",

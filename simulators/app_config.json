@@ -1,6 +1,8 @@
 {
-    "simulator_app_key": "sim_app_key",
-    "digital_input_count": 1,
-    "digital_output_count": 2,
-    "a_funny_message": "yeeha"
-}
+    "horn_pin": 7,
+    "starter_pin": 6,
+    "ignition_in_pin": 3,
+    "ignition_out_pin": 0,
+    "no_charge_in_pin": 2,
+    "ignition_input_pin": 1
+  }
