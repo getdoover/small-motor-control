@@ -5,19 +5,19 @@ This ensures all modules are importable and that the config is valid.
 """
 
 def test_import_app():
-    from app_template.application import SampleApplication
-    assert SampleApplication
+    from small_motor_control.application import SmallMotorControlApplication
+    assert SmallMotorControlApplication
 
 def test_config():
-    from app_template.app_config import SampleConfig
+    from small_motor_control.app_config import SmallMotorControlConfig
 
-    config = SampleConfig()
+    config = SmallMotorControlConfig()
     assert isinstance(config.to_dict(), dict)
 
 def test_ui():
-    from app_template.app_ui import SampleUI
-    assert SampleUI
+    from small_motor_control.app_ui import SmallMotorControlUI
+    assert SmallMotorControlUI
 
 def test_state():
-    from app_template.app_state import SampleState
-    assert SampleState
+    from small_motor_control.app_state import SmallMotorControlState
+    assert SmallMotorControlState

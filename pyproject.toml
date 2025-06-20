@@ -1,5 +1,5 @@
 [project]
-name = "app-template"
+name = "small-motor-control"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-doover-app-run = "app_template:main"
+doover-app-run = "small_motor_control:main"
 
 [build-system]
 requires = ["hatchling"]
