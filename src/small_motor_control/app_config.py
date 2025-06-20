@@ -29,7 +29,7 @@ class SmallMotorControlConfig(config.Schema):
             minimum=0,
         )
         
-        self.sim_app_key = config.Application("Simulator App Key", description="The app key for the simulator")
+        # self.sim_app_key = config.Application("Simulator App Key", description="The app key for the simulator")
 
 
 if __name__ == "__main__":
