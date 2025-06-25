@@ -26,7 +26,7 @@
                     "x-hidden": false,
                     "type": "integer",
                     "description": "This pin is used to detect the ignition state. AI are Pin 4-5",
-                    "default": 1,
+                    "default": 4,
                     "minimum": 0
                 },
                 "no_charge_in_pin": {
@@ -35,7 +35,7 @@
                     "x-hidden": false,
                     "type": "integer",
                     "description": "This pin is used to detect the alternator charging state. AI are Pin 4-5",
-                    "default": 2,
+                    "default": 5,
                     "minimum": 0
                 },
                 "ignition_out_pin": {
