@@ -8,6 +8,7 @@ from .app_config import SmallMotorControlConfig
 from .app_ui import SmallMotorControlUI
 from .app_state import SmallMotorControlState
 
+# Set up logging
 log = logging.getLogger()
 
 
@@ -31,19 +32,19 @@ class StartAttempt:
     
     def get_ignition_state(self) -> bool:
         # Ignition should be on for 6 seconds before start attempt
-        if time.time() < self.start_time + 10:
+        if time.time() < self.start_time + 8:
             return False
         return True
     
     def get_starter_state(self) -> bool:
         # Starter should be on for 6 seconds during start attempts
-        if time.time() < self.start_time + 12:
+        if time.time() < self.start_time + 10:
             return False
-        if time.time() < self.start_time + 18:
+        if time.time() < self.start_time + 16:
             return True
-        if time.time() < self.start_time + 23:
+        if time.time() < self.start_time + 22:
             return False
-        if time.time() < self.start_time + 29:
+        if time.time() < self.start_time + 28:
             return True
         return False
     
@@ -58,12 +59,15 @@ class SmallMotorControlApplication(Application):
         self.ui = SmallMotorControlUI()
         self.state = SmallMotorControlState()
 
-        self.last_ignition_input = None
-        self.last_no_charge_input = None
+        self.loop_target_period = 0.25  # seconds
+
+        self._last_ignition_input = None
+        self._last_no_charge_input = None
 
         self.start_attempt: StartAttempt | None = None
 
     async def setup(self):
+        self.ui_manager.set_display_name("Motor")
         self.ui_manager.add_children(*self.ui.fetch())
         await self.update_inputs()
 
@@ -97,9 +101,10 @@ class SmallMotorControlApplication(Application):
             await self.set_horn(False)
 
         self.ui.update(
+            ignition_on=self.last_ignition_input,
             is_running=self.get_io_is_running(),
+            manual_mode=self.state.state in ["ignition_manual_on", "running_manual"],
         )
-
 
     async def update_inputs(self):
         # This is where you would read inputs from the device
@@ -111,48 +116,56 @@ class SmallMotorControlApplication(Application):
             else:
                 return await self.platform_iface.get_di_async(pin)
 
-        self.last_ignition_input = await get_input(self.config.ignition_in_pin.value)
-        self.last_no_charge_input = await get_input(self.config.no_charge_in_pin.value)
+        self._last_ignition_input = await get_input(self.config.ignition_in_pin.value)
+        self._last_no_charge_input = await get_input(self.config.no_charge_in_pin.value)
 
 
     async def spin_state(self): 
-        self.update_inputs()
+        await self.update_inputs()
 
         last_state = None
         ## keep spinning until state has stabilised
         while last_state != self.state:
             last_state = self.state
-            self.evaluate_state()
+            await self.evaluate_state()
             log.info(f"State spin complete for {self.name} - {self.state}")
 
         ## Clear the UI actions after evaluating the state
         self.ui.start_now.coerce(None)
         self.ui.stop_now.coerce(None)
 
-    def evaluate_state(self):
+    async def evaluate_state(self):
         s = self.state.state
 
         if s == "ignition_off":
             if self.last_ignition_input:
-                self.state.ignition_detected_on()
+                await self.state.ignition_detected_on()
             if self.check_start_command():
-                self.state.run_start()
+                await self.state.run_start()
 
-        elif s in ["ignition_manual_on", "running_manual"]:
+        elif s == "ignition_manual_on":
             if not self.last_ignition_input:
-                self.state.ignition_detected_off()
+                await self.state.ignition_detected_off()
+            if self.get_io_is_running():
+                await self.state.manual_start()
+
+        elif s == "running_manual":
+            if not self.last_ignition_input:
+                await self.state.ignition_detected_off()
+            elif not self.get_io_is_running():
+                await self.state.ignition_detected_off()
 
         elif s == "starting_auto":
             if self.get_io_is_running():
-                self.state.has_started()
+                await self.state.has_started()
             elif self.check_stop_command():
-                self.state.stop_motor()
+                await self.state.stop_motor()
 
         elif s == "running_auto":
             if not self.get_io_is_running():
-                self.state.stop_motor()
+                await self.state.stop_motor()
             elif self.check_stop_command():
-                self.state.stop_motor()
+                await self.state.stop_motor()
 
     def check_start_command(self):
         # This is where you would check for a start command, e.g., from a button press
@@ -167,24 +180,40 @@ class SmallMotorControlApplication(Application):
             return True
         return False
     
+    @property
+    def last_ignition_input(self):
+        if self._last_ignition_input is None:
+            return False
+        if isinstance(self._last_ignition_input, bool):
+            return self._last_ignition_input
+        return self._last_ignition_input > 2
+    
+    @property
+    def last_no_charge_input(self):
+        if self._last_no_charge_input is None:
+            return False
+        if isinstance(self._last_no_charge_input, bool):
+            return self._last_no_charge_input
+        return self._last_no_charge_input > 2
+
     async def set_ignition(self, state: bool):
         log.debug(f"Setting ignition to {state} on pin {self.config.ignition_out_pin.value}")
         if self.config.ignition_out_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 6, state)
+            await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 6, 100 if state else 0)
         else:
             await self.platform_iface.set_do_async(self.config.ignition_out_pin.value, state)
 
     async def set_starter(self, state: bool):
         log.debug(f"Setting starter to {state} on pin {self.config.starter_pin.value}")
         if self.config.starter_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.starter_pin.value - 6, state)
+            await self.platform_iface.set_ao_async(self.config.starter_pin.value - 6, 100 if state else 0)
         else:
             await self.platform_iface.set_do_async(self.config.starter_pin.value, state)
 
     async def set_horn(self, state: bool):
         log.debug(f"Setting horn to {state} on pin {self.config.horn_pin.value}")
         if self.config.horn_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.horn_pin.value - 6, state)
+            await self.platform_iface.set_ao_async(self.config.horn_pin.value - 6, 100 if state else 0)
         else:
             await self.platform_iface.set_do_async(self.config.horn_pin.value, state)
 

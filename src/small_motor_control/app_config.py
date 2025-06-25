@@ -11,13 +11,13 @@ class SmallMotorControlConfig(config.Schema):
         self.ignition_in_pin = config.Integer(
             "Ignition In Pin",
             description="This pin is used to detect the ignition state. AI are Pin 4-5",
-            default=1,
+            default=4,
             minimum=0,
         )
         self.no_charge_in_pin = config.Integer(
             "No Charge In Pin",
             description="This pin is used to detect the alternator charging state. AI are Pin 4-5",
-            default=2,
+            default=5,
             minimum=0,
         )
         self.ignition_out_pin = config.Integer(
