@@ -20,6 +20,12 @@ class SmallMotorControlConfig(config.Schema):
             default=5,
             minimum=0,
         )
+        self.estop_in_pin = config.Integer(
+            "Estop In Pin",
+            description="This pin is used to detect the emergency stop state. AI are Pin 4-5",
+            default=0,
+            minimum=0,
+        )
         self.ignition_out_pin = config.Integer(
             "Ignition Out Pin",
             description="This pin is used to control the ignition relay. AO are Pin 6-7",

@@ -61,8 +61,12 @@ class SmallMotorControlApplication(Application):
 
         self.loop_target_period = 0.25  # seconds
 
+        self._last_estop_input = None
         self._last_ignition_input = None
         self._last_no_charge_input = None
+
+        self._last_io_is_running = None
+        self._last_io_is_running_change = time.time()
 
         self.start_attempt: StartAttempt | None = None
 
@@ -81,6 +85,7 @@ class SmallMotorControlApplication(Application):
                 "ignition_off",
                 "ignition_manual_on",
                 "running_manual",
+                "estopped",
             ]:
             self.start_attempt = None
             await self.set_ignition(False)
@@ -101,8 +106,9 @@ class SmallMotorControlApplication(Application):
             await self.set_horn(False)
 
         self.ui.update(
-            ignition_on=self.last_ignition_input,
-            is_running=self.get_io_is_running(),
+            estopped=self.state.state == "estopped",
+            ignition_on=(self.last_ignition_input),
+            is_running=(self.get_io_is_running()),
             manual_mode=self.state.state in ["ignition_manual_on", "running_manual"],
         )
 
@@ -116,9 +122,9 @@ class SmallMotorControlApplication(Application):
             else:
                 return await self.platform_iface.get_di_async(pin)
 
+        self._last_estop_input = await get_input(self.config.estop_in_pin.value)
         self._last_ignition_input = await get_input(self.config.ignition_in_pin.value)
         self._last_no_charge_input = await get_input(self.config.no_charge_in_pin.value)
-
 
     async def spin_state(self): 
         await self.update_inputs()
@@ -128,7 +134,7 @@ class SmallMotorControlApplication(Application):
         while last_state != self.state:
             last_state = self.state
             await self.evaluate_state()
-            log.info(f"State spin complete for {self.name} - {self.state}")
+            # log.info(f"State spin complete for {self.name} - {self.state}")
 
         ## Clear the UI actions after evaluating the state
         self.ui.start_now.coerce(None)
@@ -137,11 +143,19 @@ class SmallMotorControlApplication(Application):
     async def evaluate_state(self):
         s = self.state.state
 
-        if s == "ignition_off":
+        ## No matter what state, if the emergency stop is pressed, we go to estopped
+        if self.last_estop_input:
+            await self.state.estop()
+
+        elif s == "ignition_off":
             if self.last_ignition_input:
                 await self.state.ignition_detected_on()
             if self.check_start_command():
                 await self.state.run_start()
+
+        elif s == "estopped":
+            if not self.last_estop_input:
+                await self.state.reset_estop()
 
         elif s == "ignition_manual_on":
             if not self.last_ignition_input:
@@ -175,11 +189,33 @@ class SmallMotorControlApplication(Application):
         # This is where you would check for a stop command, e.g., from a button press
         return self.ui.stop_now.current_value
 
-    def get_io_is_running(self) -> bool:
+    def get_io_is_running(self, start_grace_period=2) -> bool:
         if self.last_ignition_input and not self.last_no_charge_input:
-            return True
-        return False
+            result = True
+        else:
+            result = False
+
+        if self._last_io_is_running != result:
+            self._last_io_is_running_change = time.time()
+        self._last_io_is_running = result
+
+        if result and self.get_io_is_running_age() < start_grace_period:
+            return False
+        return result
+        
+    def get_io_is_running_age(self) -> float:
+        if self._last_io_is_running_change is None:
+            return 0
+        return time.time() - self._last_io_is_running_change
     
+    @property
+    def last_estop_input(self):
+        if self._last_estop_input is None:
+            return False
+        if isinstance(self._last_estop_input, bool):
+            return self._last_estop_input
+        return self._last_estop_input > 2
+
     @property
     def last_ignition_input(self):
         if self._last_ignition_input is None:

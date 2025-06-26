@@ -9,6 +9,7 @@ class SmallMotorControlState:
 
     states = [
         {"name": "ignition_off"},
+        {"name": "estopped"},
         {"name": "ignition_manual_on"},
         {"name": "running_manual"},
         {"name": "starting_auto", "timeout": 40, "on_timeout": "stop_motor"},
@@ -22,6 +23,8 @@ class SmallMotorControlState:
         {"trigger": "run_start", "source": "ignition_off", "dest": "starting_auto"},
         {"trigger": "has_started", "source": "starting_auto", "dest": "running_auto"},
         {"trigger": "stop_motor", "source": ["starting_auto", "running_auto"], "dest": "ignition_off"},
+        {"trigger": "estop", "source": "*", "dest": "estopped"},
+        {"trigger": "reset_estop", "source": "estopped", "dest": "ignition_off"},
     ]
 
     def __init__(self):

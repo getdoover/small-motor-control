@@ -10,15 +10,25 @@ class SmallMotorControlUI:
         self.start_now = ui.Action("start_now", "Start Motor", colour=ui.Colour.green, requires_confirm=True)
         self.stop_now = ui.Action("stop_now", "Stop Motor", colour=ui.Colour.red, requires_confirm=False, hidden=True)
 
-        self.manual_mode_warning = ui.WarningIndicator("manual_mode_warning", "Manual Mode - No Remote Control", hidden=True)
+        self.estop_warning = ui.WarningIndicator("estop_warning", "Motor Estopped", hidden=True)
+        self.manual_mode_warning = ui.WarningIndicator("manual_mode_warning", "Motor in Manual Mode - No Remote Control", hidden=True)
 
     def fetch(self):
-        return self.ignition_on, self.is_running, self.start_now, self.stop_now, self.manual_mode_warning
+        return self.ignition_on, self.is_running, self.start_now, self.stop_now, self.estop_warning, self.manual_mode_warning
 
-    def update(self, ignition_on: bool, is_running: bool, manual_mode: bool):
+    def update(self, estopped:bool,  ignition_on: bool, is_running: bool, manual_mode: bool):
         self.ignition_on.update(ignition_on)
         self.is_running.update(is_running)
         
+        if estopped:
+            self.estop_warning.hidden = False
+            self.manual_mode_warning.hidden = True
+            self.start_now.hidden = True
+            self.stop_now.hidden = True
+            return
+        else:
+            self.estop_warning.hidden = True
+
         if manual_mode:
             self.manual_mode_warning.hidden = False
             self.start_now.hidden = True
