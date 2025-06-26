@@ -38,6 +38,15 @@
                     "default": 5,
                     "minimum": 0
                 },
+                "estop_in_pin": {
+                    "title": "Estop In Pin",
+                    "x-name": "estop_in_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "This pin is used to detect the emergency stop state. AI are Pin 4-5",
+                    "default": 0,
+                    "minimum": 0
+                },
                 "ignition_out_pin": {
                     "title": "Ignition Out Pin",
                     "x-name": "ignition_out_pin",
