@@ -8,6 +8,12 @@ class SmallMotorControlConfig(config.Schema):
         # these 2 are device specific, and inherit from the device-set variables.
         # However, the user can override them if they wish.
 
+        self.display_name = config.String(
+            "Display Name",
+            description="The display name for the small motor control application.",
+            default="Engine",
+        )
+
         self.ignition_in_pin = config.Integer(
             "Ignition In Pin",
             description="This pin is used to detect the ignition state. AI are Pin 4-5",
