@@ -4,23 +4,35 @@ from pydoover.state import StateMachine
 
 log = logging.getLogger(__name__)
 
+STATE_NAME_LOOKUP = {
+    "ignition_off": "Off",
+    "error": "Error",
+    "estopped": "E-Stopped",
+    "ignition_manual_on": "Key On",
+    "running_manual": "Running",
+    "starting_user": "Starting",
+    "running_user": "Running",
+    "starting_auto": "Starting",
+    "running_auto": "Running",
+}
+
 class SmallMotorControlState:
     state: str
 
     error_timeout = 60 * 60 * 24 * 2  # 2 days
 
     states = [
-        {"name": "ignition_off", "display_string": "Off"},
-        {"name": "error", "display_string": "Error", "timeout": error_timeout, "on_timeout": "clear_error"},
-        {"name": "estopped", "display_string": "E-Stopped"},
-        {"name": "ignition_manual_on", "display_string": "Key On"},
-        {"name": "running_manual", "display_string": "Running"},
+        {"name": "ignition_off"},
+        {"name": "error", "timeout": error_timeout, "on_timeout": "clear_error"},
+        {"name": "estopped"},
+        {"name": "ignition_manual_on"},
+        {"name": "running_manual"},
         ## These states are used when the user has pressed the start button
-        {"name": "starting_user", "timeout": 40, "on_timeout": "stop_motor", "display_string": "Starting"},
-        {"name": "running_user", "display_string": "Running"},
+        {"name": "starting_user", "timeout": 40, "on_timeout": "stop_motor"},
+        {"name": "running_user"},
         ## These states are used when another system has requested the motor to run
-        {"name": "starting_auto", "timeout": 40, "on_timeout": "set_error", "display_string": "Starting"},
-        {"name": "running_auto", "display_string": "Running"},
+        {"name": "starting_auto", "timeout": 40, "on_timeout": "set_error"},
+        {"name": "running_auto"},
     ]
 
     transitions = [
@@ -56,7 +68,7 @@ class SmallMotorControlState:
         ## Iterate through the states to find the one with "name" matching the current state
         for state in self.states:
             if state["name"] == self.state_machine.state:
-                return state["display_string"]
+                return STATE_NAME_LOOKUP.get(state["name"], "...")
         return "..."
 
     async def spin_state(self): 
