@@ -4,6 +4,18 @@ from pydoover.state import StateMachine
 
 log = logging.getLogger(__name__)
 
+STATE_NAME_LOOKUP = {
+    "ignition_off": "Off",
+    "error": "Error",
+    "estopped": "E-Stopped",
+    "ignition_manual_on": "Key On",
+    "running_manual": "Running",
+    "starting_user": "Starting",
+    "running_user": "Running",
+    "starting_auto": "Starting",
+    "running_auto": "Running",
+}
+
 class SmallMotorControlState:
     state: str
 
@@ -53,20 +65,11 @@ class SmallMotorControlState:
         """
         Returns the display string of the current state.
         """
-        ## Return a map
-        state_strings = {
-            "ignition_off": "Off",
-            "error": "Error",
-            "estopped": "E-Stopped",
-            "ignition_manual_on": "Key On",
-            "running_manual": "Running",
-            "starting_user": "Starting",
-            "running_user": "Running",
-            "starting_auto": "Starting",
-            "running_auto": "Running",
-        }
-
-        return state_strings.get(self.state, "Unknown")
+        ## Iterate through the states to find the one with "name" matching the current state
+        for state in self.states:
+            if state["name"] == self.state_machine.state:
+                return STATE_NAME_LOOKUP.get(state["name"], "...")
+        return "..."
 
     async def spin_state(self): 
         last_state = None
