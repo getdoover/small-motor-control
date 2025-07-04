@@ -20,7 +20,7 @@ services:
     #   - device_agent
     #   - sample_simulator
     environment:
-      - APP_KEY=small_motor_control_ow9hf
+      - APP_KEY=small_motor_control_xaggu
     #   # - CONFIG_FP=/app_config.json
     # volumes:
     #   - ./app_config.json:/app_config.json

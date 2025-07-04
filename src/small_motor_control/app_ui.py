@@ -30,7 +30,9 @@ class SmallMotorControlUI:
         self.estop_warning.hidden = True
         self.manual_mode_warning.hidden = True
         self.clear_error.hidden = True
-        self.auto_reason.update("", hidden=True)
+
+        self.auto_reason.update("")
+        self.auto_reason.hidden = True
 
         ## Now show the appropriate UI elements based on the state
         if estopped:
@@ -41,7 +43,8 @@ class SmallMotorControlUI:
         elif manual_mode:
             self.manual_mode_warning.hidden = False
         elif run_request_reason is not None:
-            self.auto_reason.update(run_request_reason, hidden=False)
+            self.auto_reason.hidden = False
+            self.auto_reason.update(run_request_reason)
         elif is_running:
             self.stop_now.hidden = False
         else:

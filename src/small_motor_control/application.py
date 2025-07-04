@@ -127,7 +127,7 @@ class SmallMotorControlApplication(Application):
             ignition_on=(self.last_ignition_input),
             is_running=(self.get_io_is_running()),
             manual_mode=state in ["ignition_manual_on", "running_manual"],
-            auto_running_reason=self.run_request_reason(),
+            run_request_reason=self.run_request_reason(),
             error=self.last_error,
         )
 
