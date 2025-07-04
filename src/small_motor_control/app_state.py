@@ -67,7 +67,7 @@ class SmallMotorControlState:
         """
         ## Iterate through the states to find the one with "name" matching the current state
         for state in self.states:
-            if state["name"] == self.state_machine.state:
+            if state["name"] == self.state:
                 return STATE_NAME_LOOKUP.get(state["name"], "...")
         return "..."
 
