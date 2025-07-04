@@ -20,7 +20,7 @@ class SmallMotorControlUI:
     def fetch(self):
         return self.ignition_on, self.is_running, self.start_now, self.stop_now, self.auto_reason, self.estop_warning, self.manual_mode_warning
 
-    def update(self, estopped:bool,  ignition_on: bool, is_running: bool, manual_mode: bool, run_request_reason: str | None = None, error: str | None = None):
+    def update(self, estopped:bool,  ignition_on: bool, is_running: bool, is_starting: bool, manual_mode: bool, run_request_reason: str | None = None, error: str | None = None):
         self.ignition_on.update(ignition_on)
         self.is_running.update(is_running)
         
@@ -45,7 +45,7 @@ class SmallMotorControlUI:
         elif run_request_reason is not None:
             self.auto_reason.hidden = False
             self.auto_reason.update(run_request_reason)
-        elif is_running:
+        elif is_running or is_starting:
             self.stop_now.hidden = False
         else:
             self.start_now.hidden = False

@@ -67,11 +67,12 @@ class SmallMotorControlApplication(Application):
         self._last_ignition_input = None
         self._last_no_charge_input = None
 
+        self._last_ignition_output = None
+        self._last_starter_output = None
+        self._last_horn_output = None
+
         self._last_io_is_running = None
         self._last_io_is_running_change = time.time()
-
-        self._last_run_request_reason = None
-        self._last_run_request_change = time.time()
 
         self.start_attempt: StartAttempt | None = None
 
@@ -126,6 +127,7 @@ class SmallMotorControlApplication(Application):
             estopped=state == "estopped",
             ignition_on=(self.last_ignition_input),
             is_running=(self.get_io_is_running()),
+            is_starting=("starting" in state),
             manual_mode=state in ["ignition_manual_on", "running_manual"],
             run_request_reason=self.run_request_reason(),
             error=self.last_error,
@@ -148,21 +150,11 @@ class SmallMotorControlApplication(Application):
     async def update_tags(self):
         await self.set_tag("state", self.state.state)
 
-    def has_run_request(self):
+    def has_run_request(self) -> bool:
         return self.run_request_reason() is not None
 
-    def run_request_reason(self, grace_period=6) -> str | None:
-        run_request = self.get_tag("run_request_reason")
-        if run_request != self._last_run_request_reason:
-            self._last_run_request_change = time.time()
-
-        if run_request is None and self._last_run_request_reason is not None and \
-                time.time() - self._last_run_request_change < grace_period:
-            # If the run request has recently nulled, we still consider it valid for a short grace period
-            return self._last_run_request_reason
-        
-        self._last_run_request_reason = run_request
-        return run_request
+    def run_request_reason(self) -> str | None:
+        return self.get_tag("run_request_reason")
 
     def check_start_command(self):
         # This is where you would check for a start command, e.g., from a button press
@@ -221,21 +213,27 @@ class SmallMotorControlApplication(Application):
 
     async def set_ignition(self, state: bool):
         log.debug(f"Setting ignition to {state} on pin {self.config.ignition_out_pin.value}")
-        if self.config.ignition_out_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 6, 100 if state else 0)
-        else:
-            await self.platform_iface.set_do_async(self.config.ignition_out_pin.value, state)
+        if state != self._last_ignition_output:
+            if self.config.ignition_out_pin.value > 5:
+                await self.platform_iface.set_ao_async(self.config.ignition_out_pin.value - 6, 100 if state else 0)
+            else:
+                await self.platform_iface.set_do_async(self.config.ignition_out_pin.value, state)
+        self._last_ignition_output = state
 
     async def set_starter(self, state: bool):
         log.debug(f"Setting starter to {state} on pin {self.config.starter_pin.value}")
-        if self.config.starter_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.starter_pin.value - 6, 100 if state else 0)
-        else:
-            await self.platform_iface.set_do_async(self.config.starter_pin.value, state)
+        if state != self._last_starter_output:
+            if self.config.starter_pin.value > 5:
+                await self.platform_iface.set_ao_async(self.config.starter_pin.value - 6, 100 if state else 0)
+            else:
+                await self.platform_iface.set_do_async(self.config.starter_pin.value, state)
+        self._last_starter_output = state
 
     async def set_horn(self, state: bool):
         log.debug(f"Setting horn to {state} on pin {self.config.horn_pin.value}")
-        if self.config.horn_pin.value > 5:
-            await self.platform_iface.set_ao_async(self.config.horn_pin.value - 6, 100 if state else 0)
-        else:
-            await self.platform_iface.set_do_async(self.config.horn_pin.value, state)
+        if state != self._last_horn_output:
+            if self.config.horn_pin.value > 5:
+                await self.platform_iface.set_ao_async(self.config.horn_pin.value - 6, 100 if state else 0)
+            else:
+                await self.platform_iface.set_do_async(self.config.horn_pin.value, state)
+        self._last_horn_output = state
