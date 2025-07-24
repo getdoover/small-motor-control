@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from pydoover.state import StateMachine
 
@@ -6,7 +7,7 @@ log = logging.getLogger(__name__)
 
 STATE_NAME_LOOKUP = {
     "ignition_off": "Off",
-    "error": "Error",
+    "error": "Problem",
     "estopped": "E-Stopped",
     "ignition_manual_on": "Key On",
     "running_manual": "Running",
@@ -23,15 +24,15 @@ class SmallMotorControlState:
 
     states = [
         {"name": "ignition_off"},
-        {"name": "error", "timeout": error_timeout, "on_timeout": "clear_error"},
+        {"name": "error", "timeout": error_timeout, "on_timeout": "reset_error", "on_enter": "on_error", "on_exit": "reset_error"},
         {"name": "estopped"},
         {"name": "ignition_manual_on"},
         {"name": "running_manual"},
         ## These states are used when the user has pressed the start button
-        {"name": "starting_user", "timeout": 40, "on_timeout": "stop_motor"},
+        {"name": "starting_user", "timeout": 30, "on_timeout": "trigger_error"},
         {"name": "running_user"},
         ## These states are used when another system has requested the motor to run
-        {"name": "starting_auto", "timeout": 40, "on_timeout": "set_error"},
+        {"name": "starting_auto", "timeout": 30, "on_timeout": "trigger_error"},
         {"name": "running_auto"},
     ]
 
@@ -46,8 +47,8 @@ class SmallMotorControlState:
         {"trigger": "stop_motor", "source": ["starting_user", "running_user", "starting_auto", "running_auto"], "dest": "ignition_off"},
         {"trigger": "estop", "source": "*", "dest": "estopped"},
         {"trigger": "reset_estop", "source": "estopped", "dest": "ignition_off"},
-        {"trigger": "error", "source": "*", "dest": "error"},
-        {"trigger": "reset_error", "source": "error", "dest": "ignition_off"},
+        {"trigger": "set_error", "source": "*", "dest": "error"},
+        {"trigger": "unset_error", "source": "error", "dest": "ignition_off"},
     ]
 
     def __init__(self, app):
@@ -101,6 +102,10 @@ class SmallMotorControlState:
             if self.app.has_run_request():
                 await self.auto_run_start()
 
+        elif s == "error":
+            if self.app.check_start_command():
+                await self.user_run_start()
+
         elif s == "ignition_manual_on":
             if not self.app.last_ignition_input:
                 await self.ignition_detected_off()
@@ -121,7 +126,7 @@ class SmallMotorControlState:
 
         elif s == "running_user":
             if not self.app.get_io_is_running():
-                await self.stop_motor()
+                await self.trigger_error()
             elif self.app.check_stop_command():
                 await self.stop_motor()
 
@@ -133,22 +138,31 @@ class SmallMotorControlState:
 
         elif s == "running_auto":
             if not self.app.get_io_is_running():
-                await self.stop_motor()
+                await self.trigger_error()
             elif not self.app.has_run_request():
                 await self.stop_motor()
 
-    def set_error(self, error: str = "Error occurred"):
+    async def trigger_error(self, error: str = "Problem running engine"):
         """
         Set the state to error.
         """
-        log.error("Setting state to error")
-        self.error()
+        log.error("Setting state to error : " + error)
+        if self.state is not "error":
+            await self.set_error()
         self.app.last_error = error
 
-    def reset_error(self):
+    async def on_error(self):
+        """
+        Called when the state is set to error.
+        """
+        ## Send a notification to the user
+        await self.app.ui_manager.send_notification_async("Problem starting engine. Most likely out of fuel")
+
+    async def reset_error(self):
         """
         Reset the error state.
         """
         log.info("Resetting error state")
-        self.reset_error()
+        if self.state == "error":
+            await self.unset_error()
         self.app.last_error = None
