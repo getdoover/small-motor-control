@@ -30,6 +30,7 @@ class SmallMotorControlUI:
         self.start_now.hidden = True
         self.stop_now.hidden = True
         self.estop_warning.hidden = True
+        self.error_warning.hidden = True
         self.manual_mode_warning.hidden = True
         self.clear_error.hidden = True
 
