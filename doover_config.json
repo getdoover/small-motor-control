@@ -20,6 +20,14 @@
             "title": "Application Config",
             "type": "object",
             "properties": {
+                "display_name": {
+                    "title": "Display Name",
+                    "x-name": "display_name",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "The display name for the small motor control application.",
+                    "default": "Engine"
+                },
                 "ignition_in_pin": {
                     "title": "Ignition In Pin",
                     "x-name": "ignition_in_pin",

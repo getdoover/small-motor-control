@@ -20,7 +20,7 @@ class SmallMotorControlUI:
         self.manual_mode_warning = ui.WarningIndicator("manual_mode_warning", "Engine in Manual Mode - No Remote Control", hidden=True)
 
     def fetch(self):
-        return self.notifs, self.ignition_on, self.is_running, self.start_now, self.stop_now, self.auto_reason, self.estop_warning, self.error_warning, self.manual_mode_warning
+        return self.notifs, self.ignition_on, self.is_running, self.start_now, self.stop_now, self.clear_error, self.auto_reason, self.estop_warning, self.error_warning, self.manual_mode_warning
 
     def update(self, estopped:bool,  ignition_on: bool, is_running: bool, is_starting: bool, manual_mode: bool, run_request_reason: str | None = None, error: str | None = None):
         self.ignition_on.update(ignition_on)

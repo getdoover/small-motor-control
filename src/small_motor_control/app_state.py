@@ -103,6 +103,8 @@ class SmallMotorControlState:
                 await self.auto_run_start()
 
         elif s == "error":
+            if self.app.check_clear_error_command():
+                await self.reset_error()
             if self.app.check_start_command():
                 await self.user_run_start()
 
