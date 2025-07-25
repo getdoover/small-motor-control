@@ -24,7 +24,7 @@ class SmallMotorControlState:
 
     states = [
         {"name": "ignition_off"},
-        {"name": "error", "timeout": error_timeout, "on_timeout": "reset_error", "on_enter": "on_error", "on_exit": "reset_error"},
+        {"name": "error", "timeout": error_timeout, "on_timeout": "reset_error", "on_enter": "on_error", "on_exit": "clear_error"},
         {"name": "estopped"},
         {"name": "ignition_manual_on"},
         {"name": "running_manual"},
@@ -167,4 +167,7 @@ class SmallMotorControlState:
         log.info("Resetting error state")
         if self.state == "error":
             await self.unset_error()
+        self.clear_error()
+
+    def clear_error(self):
         self.app.last_error = None
