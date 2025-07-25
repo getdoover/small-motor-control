@@ -156,7 +156,7 @@ class SmallMotorControlState:
         Called when the state is set to error.
         """
         ## Send a notification to the user
-        await self.app.ui_manager.send_notification_async("Problem starting engine. Most likely out of fuel")
+        await self.app.ui_manager.send_notification_async("Problem running engine. Most likely out of fuel")
 
     async def reset_error(self):
         """
