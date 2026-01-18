@@ -54,5 +54,8 @@ class SmallMotorControlConfig(config.Schema):
         # self.sim_app_key = config.Application("Simulator App Key", description="The app key for the simulator")
 
 
-if __name__ == "__main__":
+def export():
     SmallMotorControlConfig().export(Path(__file__).parent.parent.parent / "doover_config.json", "small_motor_control")
+
+if __name__ == "__main__":
+    export()

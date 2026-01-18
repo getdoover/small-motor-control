@@ -11,6 +11,7 @@ dependencies = [
 
 [project.scripts]
 doover-app-run = "small_motor_control:main"
+export-config = "small_motor_control.app_config:export"
 
 [build-system]
 requires = ["hatchling"]
