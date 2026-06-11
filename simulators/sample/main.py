@@ -1,20 +1,20 @@
 import random
 
 from pydoover.docker import Application, run_app
-from pydoover.config import Schema
 
 
 class SampleSimulator(Application):
-    def setup(self):
+    async def setup(self):
         pass
 
-    def main_loop(self):
-        self.set_tag("random_value", random.randint(1, 100))
+    async def main_loop(self):
+        await self.set_tag("random_value", random.randint(1, 100))
 
 
 def main():
     """Run the sample simulator application."""
-    run_app(SampleSimulator(config=Schema()))
+    run_app(SampleSimulator())
+
 
 if __name__ == "__main__":
     main()

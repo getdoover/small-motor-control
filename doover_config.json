@@ -17,69 +17,91 @@
         "config_schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$id": "",
-            "title": "Application Config",
+            "title": "$default",
             "type": "object",
             "properties": {
-                "display_name": {
-                    "title": "Display Name",
-                    "x-name": "display_name",
-                    "x-hidden": false,
-                    "type": "string",
-                    "description": "The display name for the small motor control application.",
-                    "default": "Engine"
-                },
                 "ignition_in_pin": {
                     "title": "Ignition In Pin",
                     "x-name": "ignition_in_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to detect the ignition state. AI are Pin 4-5",
                     "default": 4,
+                    "x-position": 0,
                     "minimum": 0
                 },
                 "no_charge_in_pin": {
                     "title": "No Charge In Pin",
                     "x-name": "no_charge_in_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to detect the alternator charging state. AI are Pin 4-5",
                     "default": 5,
+                    "x-position": 1,
                     "minimum": 0
                 },
                 "estop_in_pin": {
                     "title": "Estop In Pin",
                     "x-name": "estop_in_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to detect the emergency stop state. AI are Pin 4-5",
                     "default": 0,
+                    "x-position": 2,
                     "minimum": 0
                 },
                 "ignition_out_pin": {
                     "title": "Ignition Out Pin",
                     "x-name": "ignition_out_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to control the ignition relay. AO are Pin 6-7",
                     "default": 0,
+                    "x-position": 3,
                     "minimum": 0
                 },
                 "starter_pin": {
                     "title": "Starter Pin",
                     "x-name": "starter_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to control the starter relay. AO are Pin 6-7",
                     "default": 6,
+                    "x-position": 4,
                     "minimum": 0
                 },
                 "horn_pin": {
                     "title": "Horn Pin",
                     "x-name": "horn_pin",
                     "x-hidden": false,
-                    "type": "integer",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "x-required": false,
                     "description": "This pin is used to control the horn relay. AO are Pin 6-7",
                     "default": 7,
+                    "x-position": 5,
                     "minimum": 0
                 }
             },
@@ -97,6 +119,107 @@
         "code_repo_id": null,
         "export_config_command": null,
         "run_command": null,
-        "lambda_arn": null
+        "lambda_arn": null,
+        "ui_schema": {
+            "displayString": "$tag.app().app_display_name:string:\"Engine\"",
+            "hidden": "$config.app().hidden:boolean:false:boolean:false",
+            "position": "$config.app().dv_app_position:number:100",
+            "icon": null,
+            "colour": null,
+            "defaultOpen": "$config.app().dv_app_default_open:boolean",
+            "type": "uiApplication",
+            "name": "$config.app().APP_KEY",
+            "children": {
+                "ignition_on": {
+                    "name": "ignition_on",
+                    "type": "uiVariable",
+                    "displayString": "Ignition On",
+                    "showActivity": true,
+                    "position": 51,
+                    "hidden": false,
+                    "varType": "bool",
+                    "currentValue": "$tag.app().ignition_on:boolean:false",
+                    "live": true
+                },
+                "is_running": {
+                    "name": "is_running",
+                    "type": "uiVariable",
+                    "displayString": "Engine Running",
+                    "showActivity": true,
+                    "position": 52,
+                    "hidden": false,
+                    "varType": "bool",
+                    "currentValue": "$tag.app().is_running:boolean:false",
+                    "live": true
+                },
+                "start_now": {
+                    "name": "start_now",
+                    "type": "uiButton",
+                    "displayString": "Start Engine",
+                    "position": 53,
+                    "hidden": "$tag.app().start_now_hidden:boolean:false",
+                    "colour": "green",
+                    "currentValue": "$cmds.app().start_now",
+                    "requiresConfirm": true
+                },
+                "stop_now": {
+                    "name": "stop_now",
+                    "type": "uiButton",
+                    "displayString": "Stop Engine",
+                    "position": 54,
+                    "hidden": "$tag.app().stop_now_hidden:boolean:true",
+                    "colour": "red",
+                    "currentValue": "$cmds.app().stop_now",
+                    "requiresConfirm": false
+                },
+                "clear_error": {
+                    "name": "clear_error",
+                    "type": "uiButton",
+                    "displayString": "Clear Error",
+                    "position": 55,
+                    "hidden": "$tag.app().clear_error_hidden:boolean:true",
+                    "colour": "blue",
+                    "currentValue": "$cmds.app().clear_error",
+                    "requiresConfirm": false
+                },
+                "auto_reason": {
+                    "name": "auto_reason",
+                    "type": "uiVariable",
+                    "displayString": "Running for",
+                    "showActivity": true,
+                    "position": 56,
+                    "hidden": "$tag.app().auto_reason_hidden:boolean:true",
+                    "varType": "string",
+                    "currentValue": "$tag.app().run_request_reason:string:null"
+                },
+                "estop_warning": {
+                    "name": "estop_warning",
+                    "type": "uiWarningIndicator",
+                    "displayString": "Engine Estopped",
+                    "position": 57,
+                    "hidden": "$tag.app().estop_warning_hidden:boolean:true",
+                    "currentValue": "$cmds.app().estop_warning",
+                    "can_cancel": true
+                },
+                "error_warning": {
+                    "name": "error_warning",
+                    "type": "uiWarningIndicator",
+                    "displayString": "Problem Starting Engine",
+                    "position": 58,
+                    "hidden": "$tag.app().error_warning_hidden:boolean:true",
+                    "currentValue": "$cmds.app().error_warning",
+                    "can_cancel": true
+                },
+                "manual_mode_warning": {
+                    "name": "manual_mode_warning",
+                    "type": "uiWarningIndicator",
+                    "displayString": "Engine in Manual Mode - No Remote Control",
+                    "position": 59,
+                    "hidden": "$tag.app().manual_mode_warning_hidden:boolean:true",
+                    "currentValue": "$cmds.app().manual_mode_warning",
+                    "can_cancel": true
+                }
+            }
+        }
     }
 }
