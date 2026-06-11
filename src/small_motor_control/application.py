@@ -2,6 +2,7 @@ import logging
 import time
 
 from pydoover.docker import Application
+from pydoover import ui
 
 from .app_config import SmallMotorControlConfig
 from .app_state import SmallMotorControlState
