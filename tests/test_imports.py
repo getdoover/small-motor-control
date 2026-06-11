@@ -11,12 +11,15 @@ def test_import_app():
 def test_config():
     from small_motor_control.app_config import SmallMotorControlConfig
 
-    config = SmallMotorControlConfig()
-    assert isinstance(config.to_dict(), dict)
+    assert isinstance(SmallMotorControlConfig.to_schema(), dict)
 
 def test_ui():
     from small_motor_control.app_ui import SmallMotorControlUI
     assert SmallMotorControlUI
+
+def test_tags():
+    from small_motor_control.app_tags import SmallMotorControlTags
+    assert SmallMotorControlTags
 
 def test_state():
     from small_motor_control.app_state import SmallMotorControlState
