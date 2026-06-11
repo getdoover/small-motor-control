@@ -149,7 +149,7 @@ class SmallMotorControlState:
         Set the state to error.
         """
         log.error("Setting state to error : " + error)
-        if self.state is not "error":
+        if self.state != "error":
             await self.set_error()
         self.app.last_error = error
 
