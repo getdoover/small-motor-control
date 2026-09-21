@@ -40,7 +40,7 @@ class SmallMotorControlState:
         {"trigger": "ignition_detected_on", "source": "ignition_off", "dest": "ignition_manual_on"},
         {"trigger": "ignition_detected_off", "source": ["ignition_manual_on", "running_manual"], "dest": "ignition_off"},
         {"trigger": "manual_start", "source": "ignition_manual_on", "dest": "running_manual"},
-        {"trigger": "user_run_start", "source": "ignition_off", "dest": "starting_user"},
+        {"trigger": "user_run_start", "source": ["ignition_off", "error"], "dest": "starting_user"},
         {"trigger": "user_has_started", "source": "starting_user", "dest": "running_user"},
         {"trigger": "auto_run_start", "source": "ignition_off", "dest": "starting_auto"},
         {"trigger": "auto_has_started", "source": "starting_auto", "dest": "running_auto"},
@@ -97,15 +97,15 @@ class SmallMotorControlState:
         elif s == "ignition_off":
             if self.app.last_ignition_input:
                 await self.ignition_detected_on()
-            if self.app.check_start_command():
+            elif self.app.check_start_command():
                 await self.user_run_start()
-            if self.app.has_run_request():
+            elif self.app.has_run_request():
                 await self.auto_run_start()
 
         elif s == "error":
             if self.app.check_clear_error_command():
                 await self.reset_error()
-            if self.app.check_start_command():
+            elif self.app.check_start_command():
                 await self.user_run_start()
 
         elif s == "ignition_manual_on":
@@ -144,21 +144,23 @@ class SmallMotorControlState:
             elif not self.app.has_run_request():
                 await self.stop_motor()
 
-    async def trigger_error(self, error: str = "Problem running engine"):
+    async def trigger_error(self, error: str = "Problem running engine. Most likely out of fuel"):
         """
         Set the state to error.
         """
         log.error("Setting state to error : " + error)
+        self.app.last_error = error
         if self.state != "error":
             await self.set_error()
-        self.app.last_error = error
 
     async def on_error(self):
         """
         Called when the state is set to error.
         """
-        ## Send a notification to the user
-        await self.app.ui_manager.send_notification_async("Problem running engine. Most likely out of fuel")
+        try:
+            await self.app.notifications.engine_problem.send(self.app.last_error)
+        except Exception as e:
+            log.error(f"Failed to send error notification: {e}", exc_info=e)
 
     async def reset_error(self):
         """

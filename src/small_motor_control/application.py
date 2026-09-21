@@ -5,6 +5,7 @@ from pydoover.docker import Application
 from pydoover import ui
 
 from .app_config import SmallMotorControlConfig
+from .app_notifications import SmallMotorControlNotifications
 from .app_state import SmallMotorControlState
 from .app_tags import SmallMotorControlTags
 from .app_ui import SmallMotorControlUI
@@ -54,6 +55,7 @@ class SmallMotorControlApplication(Application):
     config_cls = SmallMotorControlConfig
     tags_cls = SmallMotorControlTags
     ui_cls = SmallMotorControlUI
+    notifications_cls = SmallMotorControlNotifications
 
     async def setup(self):
         self.started = time.time()
@@ -159,7 +161,7 @@ class SmallMotorControlApplication(Application):
 
         ## Show exactly one control surface, in priority order
         estopped = state == "estopped"
-        errored = not estopped and self.last_error is not None
+        errored = not estopped and state == "error"
         manual = not estopped and not errored and state in ["ignition_manual_on", "running_manual"]
         auto = (
                 not estopped and not errored and not manual
